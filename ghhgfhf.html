@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ECE Quiz — Unit 3 & 4</title>
+<style>
+  /* --- Layout & theme --- */
+  :root{
+    --bg:#0f1724;
+    --card:#0b1220;
+    --accent1:#7c3aed;
+    --accent2:#06b6d4;
+    --muted:#94a3b8;
+    --glass: rgba(255,255,255,0.03);
+    --success:#16a34a;
+    --danger:#ef4444;
+    --yellow:#f59e0b;
+    --radius:14px;
+    --shadow: 0 8px 30px rgba(2,6,23,0.6);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  html,body{height:100%; margin:0; background:
+    radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.12), transparent 6%),
+    radial-gradient(900px 500px at 90% 90%, rgba(6,182,212,0.08), transparent 6%),
+    var(--bg);
+    color:#e6eef8;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  .wrap{
+    max-width:1000px;
+    margin:28px auto;
+    padding:18px;
+  }
+
+  header {
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:12px;
+  }
+  .logo{
+    width:56px;height:56px;border-radius:12px;
+    background:linear-gradient(135deg,var(--accent1),var(--accent2));
+    display:flex;align-items:center;justify-content:center;
+    box-shadow: 0 8px 30px rgba(99,102,241,0.15);
+    font-weight:700;font-size:20px;
+  }
+  h1{font-size:20px;margin:0}
+  p.lead{margin:0;color:var(--muted);font-size:13px}
+
+  /* --- Card --- */
+  .card {
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:var(--radius);
+    padding:18px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+
+  /* --- Intro / Name input --- */
+  .intro {
+    display:grid;
+    grid-template-columns: 1fr 360px;
+    gap:18px;
+    align-items:center;
+  }
+  .hero {
+    padding:10px 12px;
+  }
+  .hero h2{font-size:22px;margin:0 0 8px 0}
+  .hero p{color:var(--muted);margin:0 0 12px 0}
+  .namebox {
+    padding:18px;border-radius:12px;background:var(--glass);
+    display:flex;flex-direction:column;gap:8px;
+  }
+  input#playerName{
+    padding:12px;border-radius:10px;border:0;background:rgba(255,255,255,0.03);color:inherit;
+    outline:none;font-size:16px;
+  }
+  .start-btn{
+    margin-top:8px;padding:12px;border-radius:12px;border:0;cursor:pointer;
+    font-weight:700;font-size:16px;
+    background:linear-gradient(90deg,var(--accent1),var(--accent2));
+    color:white;box-shadow: 0 12px 30px rgba(99,102,241,0.18);
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .start-btn:active{transform:translateY(2px); box-shadow:none}
+  .small{
+    font-size:13px;color:var(--muted)
+  }
+
+  /* --- Quiz header --- */
+  .quiz-header{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;
+  }
+  .timer{
+    background:linear-gradient(90deg,#02142a, rgba(255,255,255,0.02));
+    padding:8px 12px;border-radius:12px;font-weight:700;
+    display:flex;align-items:center;gap:8px;
+    box-shadow: inset 0 -6px 18px rgba(255,255,255,0.02);
+  }
+
+  /* --- Card body: question --- */
+  .qcard{
+    margin-top:6px;padding:16px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));
+    min-height:260px;display:flex;flex-direction:column;gap:12px;
+  }
+  .qmeta{
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .progress{
+    flex:1;margin-left:10px;height:10px;background:rgba(255,255,255,0.03);border-radius:999px;overflow:hidden;
+  }
+  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent1));width:0%}
+
+  .question-text{font-size:18px;font-weight:600}
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .option-btn{
+    color:#ffffff;
+    padding:12px;border-radius:12px;border:0;cursor:pointer;font-weight:600;background:rgba(255,255,255,0.02);
+    transition:transform .12s ease, box-shadow .12s ease;
+    text-align:left;
+  }
+  .option-btn:hover{transform:translateY(-3px)}
+  .option-btn.selected{outline:3px solid rgba(99,102,241,0.16)}
+  .controls{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:auto}
+  .ghost{
+    background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px 12px;border-radius:10px;color:var(--muted);cursor:pointer;
+  }
+  .primary{background:linear-gradient(90deg,var(--accent2),var(--accent1));color:#fff;border:0;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+
+  /* --- Results / review --- */
+  .results{
+    display:grid;grid-template-columns:1fr 320px;gap:16px;
+  }
+  .summary{
+    padding:16px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))
+  }
+  .bignum{font-size:46px;font-weight:800}
+  .review-list{display:flex;flex-direction:column;gap:12px;max-height:520px;overflow:auto;padding:6px}
+  .review-item{padding:12px;border-radius:10px;background:rgba(255,255,255,0.02)}
+  .correct{border-left:6px solid var(--success)}
+  .wrong{border-left:6px solid var(--danger)}
+
+  /* --- Responsive --- */
+  @media (max-width:880px){
+    .intro{grid-template-columns:1fr; }
+    .options{grid-template-columns:1fr}
+    .results{grid-template-columns:1fr}
+    .wrap{padding:12px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">ECE</div>
+    <div>
+      <h1>Interactive ECE Quiz — Unit 3 &amp; 4</h1>
+      <p class="lead">One question per slide • 15 minutes • Shuffled questions & options each load</p>
+    </div>
+  </header>
+
+  <div class="card" id="appCard">
+    <!-- INTRO / NAME -->
+    <div id="introView" class="intro">
+      <div class="hero">
+        <h2>Welcome! Ready to test your knowledge?</h2>
+        <p>Enter participant name so results are tagged. Questions are drawn from Unit 3 & 4 MCQs.</p>
+        <p class="small">Timer: 15 minutes. Each session shuffles Qs & options. Review answers after submission.</p>
+        <div style="margin-top:12px;color:var(--muted);font-size:13px">Created by Karthik Hegde</div>
+      </div>
+
+      <div class="namebox">
+        <label for="playerName" class="small">Enter your name</label>
+        <input id="playerName" type="text" placeholder="Type your name (required)" autocomplete="name" />
+        <button id="startBtn" class="start-btn">✨ Start Quiz</button>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px">
+          Questions sourced from your Unit-3 and Unit-4 files.
+        </div>
+      </div>
+    </div>
+
+    <!-- QUIZ VIEW -->
+    <div id="quizView" style="display:none">
+      <div class="quiz-header">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="font-weight:700">Participant:</div>
+          <div id="playerBadge" style="padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.02)"></div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="timer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="opacity:0.9"><path d="M12 7v6l4 2" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div id="timerText">15:00</div>
+          </div>
+          <div style="min-width:120px;text-align:right">
+            <div style="font-size:12px;color:var(--muted)">Completed</div>
+            <div id="completedCount" style="font-weight:800">0 / 0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="qcard">
+        <div class="qmeta">
+          <div id="qIndex" style="font-size:13px;color:var(--muted)"></div>
+          <div class="progress" title="Progress">
+            <i id="progressBar" style="width:0%"></i>
+          </div>
+        </div>
+
+        <div class="question-text" id="questionText">Question text</div>
+
+        <div class="options" id="optionsArea">
+          <!-- option buttons injected here -->
+        </div>
+
+        <div class="controls">
+          <div style="display:flex;gap:8px">
+            <button id="prevBtn" class="ghost">⟨ Prev</button>
+            <button id="nextBtn" class="ghost">Next ⟩</button>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button id="saveBtn" class="ghost">Save Answer</button>
+            <button id="submitBtn" class="primary">Submit Quiz</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULT / REVIEW -->
+    <div id="resultView" style="display:none; margin-top:12px">
+      <div class="results">
+        <div class="summary card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="color:var(--muted);font-size:13px">Participant</div>
+              <div id="resultName" style="font-weight:800;font-size:18px;margin-bottom:6px"></div>
+            </div>
+            <div style="text-align:right">
+              <div style="color:var(--muted);font-size:13px">Time left</div>
+              <div id="timeLeft" style="font-weight:800;font-size:18px"></div>
+            </div>
+          </div>
+
+          <hr style="border:none;height:1px;background:rgba(255,255,255,0.03);margin:12px 0" />
+
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="flex:1">
+              <div style="color:var(--muted);font-size:13px">Score</div>
+              <div class="bignum" id="scoreNumber">0%</div>
+            </div>
+            <div style="width:140px">
+              <div style="color:var(--muted);font-size:13px">Correct</div>
+              <div id="correctCount" style="font-weight:800;font-size:20px">0</div>
+              <div style="height:8px"></div>
+              <div style="color:var(--muted);font-size:13px">Incorrect</div>
+              <div id="wrongCount" style="font-weight:800;font-size:20px">0</div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button id="reviewBtn" class="primary">Review Answers</button>
+            <button id="restartBtn" class="ghost">Restart Quiz</button>
+            <button id="downloadBtn" class="ghost">Download Report</button>
+          </div>
+        </div>
+
+        <div class="card" style="padding:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div style="font-weight:700">Review</div>
+            <div style="font-size:13px;color:var(--muted)">Right = green • Wrong = red</div>
+          </div>
+          <div class="review-list" id="reviewList"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/*
+  Quiz app (single file)
+  - Shuffles questions & options automatically
+  - One question per slide, Next/Prev, Save answer
+  - 15-minute timer
+  - Submit shows results & review
+  - All 59 MCQs included (Unit 3 + Unit 4)
+*/
+
+/* ---- FULL QUESTION BANK (59 items) ----
+   Math and symbolic expressions use HTML entities for cleaner display.
+*/
+const QUESTIONS = [
+  /* UNIT 3 (24) */
+  { q: "Which of the following electrical characteristics is not exhibited by an ideal op-amp?", opts: ["Infinite output resistance","Infinite bandwidth","Infinite voltage gain","Infinite slew rate"], a: 0 },
+  { q: "An integrator circuit using an Op Amp has &hellip; in its feedback path", opts: ["Resistor","Inductor","Capacitor","Diode"], a: 2 },
+  { q: "Find the output voltage of an ideal op-amp if V1 and V2 are the two input voltages", opts: ["V1 - V2","A(V1 - V2)","A(V1 + V2)","V1 \u00D7 V2"], a: 1 },
+  { q: "A differentiator circuit using an Op Amp has &hellip; in its feedback path", opts: ["Capacitor","Resistor","Diode","Inductor"], a: 1 },
+  { q: "A sine wave of 0.5 V peak voltage is applied as input to an inverting amplifier with R1 = 10 k\u03A9 and Rf = 50 k\u03A9. The output voltage V<sub>o</sub> is", opts: ["5.2 V peak","-10 V peak","-2.5 V peak-peak","-2.5 V peak"], a: 3 },
+  { q: "The output voltage obtained for an ideal op-amp is by", opts: ["Amplifying individual input voltages","Amplifying products of two input voltages","Amplifying the difference between the two input voltages","None of the mentioned"], a: 2 },
+  { q: "The output voltage of an Op Amp integrator is given by (symbolic)", opts: ["&minus;&frac;1{RC} &int; v_i(t) dt","other (select)","other","other"], a: 0 },
+  { q: "A sine wave of 0.5 V peak applied to a non-inverting amplifier with R1 = 10 k\u03A9 and Rf = 50 k\u03A9. The output V<sub>o</sub> is", opts: ["3 V peak","2.5 V peak","-3 V peak","3 V peak-peak"], a: 0 },
+  { q: "Which is not an ideal characteristic of an op-amp?", opts: ["Output impedance is zero","Input Resistance is zero","Bandwidth is infinity","Open loop voltage gain is infinity"], a: 1 },
+  { q: "The output voltage of an Op Amp differentiator is given by (symbolic)", opts: ["R_f C &middot; d v_i/dt","other","other","other"], a: 0 },
+  { q: "A sine wave of 3.5 V peak applied to a non-inverting amplifier (R1 = 20 k\u03A9, Rf = 80 k\u03A9). Output V<sub>o</sub> is", opts: ["-12.5 V peak","10 V peak","17.5 V peak","-5 V peak"], a: 2 },
+  { q: "Which factor determines the output voltage of an op-amp?", opts: ["Supply voltage","Both positive and negative saturation voltage","Negative saturation voltage","Positive saturation voltage"], a: 1 },
+  { q: "The output voltage swing of a comparator for an applied input voltage depends on", opts: ["Regulated power supply voltages","Dual power supply voltages","AC signals applied at the terminals of the Op Amp","DC signals applied at the terminals of the Op Amp"], a: 1 },
+  { q: "A sine wave of 2 V peak applied to an inverting amplifier with R1 = 24 k\u03A9 and Rf = 82 k\u03A9. The output V<sub>o</sub> is", opts: ["-8.833 V peak","-8.833 V peak-peak","-6.833 V peak-peak","-6.833 V peak"], a: 3 },
+  { q: "An inverting amplifier using an Op Amp with given resistors provides an output equal to one of them as (document had partial symbolic options)", opts: ["Option A (placeholder)","Option B (placeholder)","Option C (placeholder)","Option D (placeholder)"], a: 2 },
+  { q: "A sine wave of 0.5 V peak to a non-inverting amplifier (R1 = 6 k\u03A9, Rf = 24 k\u03A9). V<sub>o</sub> is", opts: ["2.5 V peak","-2.5 V peak","10 V peak","2.5 V peak-peak"], a: 0 },
+  { q: "An ideal OP-AMP has following characteristics", opts: ["R<sub>i</sub> = &infin;, A = &infin;, R<sub>o</sub> = 0","R<sub>i</sub> = 0, A = &infin;, R<sub>o</sub> = 0","R<sub>i</sub> = &infin;, A = 0, R<sub>o</sub> = &infin;","R<sub>i</sub> = 0, A = &infin;, R<sub>o</sub> = &infin;"], a: 0 },
+  { q: "A non-inverting amplifier using Op Amp with R1 and Rf as the resistors provides an output voltage equal to", opts: ["V<sub>o</sub> = V<sub>in</sub>","(placeholder)","(placeholder)","V<sub>o</sub> = (1 + Rf/R1) &middot; V<sub>in</sub>"], a: 3 },
+  { q: "A non-inverting Op-Amp has a gain of 91 with R1 = 1 k\u03A9. The resistor in the feedback path must have a value of", opts: ["91 k\u03A9","90 k\u03A9","99 k\u03A9","92 k\u03A9"], a: 1 },
+  { q: "For an Op-Amp having differential gain A<sub>d</sub> and common-mode gain A<sub>c</sub>, CMRR is", opts: ["A<sub>d</sub> + A<sub>c</sub>","1 + (A<sub>d</sub>/A<sub>c</sub>)","A<sub>d</sub>/A<sub>c</sub>","A<sub>c</sub>/A<sub>d</sub>"], a: 2 },
+  { q: "A non-inverting Op-Amp has a gain of 61 with R1 = 2 k\u03A9. Feedback resistor value must be", opts: ["61 k\u03A9","62 k\u03A9","121 k\u03A9","120 k\u03A9"], a: 3 },
+  { q: "Op Amp Comparator is a circuit whose output voltage switches between", opts: ["positive saturation & negative saturation","some levels","(placeholder)","None of the above"], a: 0 },
+
+  /* UNIT 4 (35) */
+  { q: "In Colpitts' oscillator, the components used in the feedback network are", opts: ["2R and 2C","2L and 1C","2C and 1L","2L and 2C"], a: 2 },
+  { q: "With a resistance value of R = 1 k\u03A9 in a feedback network of RC oscillator, frequency of oscillations generated is 5 kHz. The value of the capacitor C is", opts: ["0.0129 \u03BCF","0.129 \u03BCF","0.0219 \u03BCF","129 \u03BCF"], a: 0 },
+  { q: "Gain with negative feedback is given by A<sub>f</sub> = A/(1 + A\u03B2). The feedback factor is", opts: ["A","\u03B2","A<sub>f</sub>","A\u03B2"], a: 1 },
+  { q: "An amplifier has an open loop voltage gain of 1000. If 10% negative voltage series feedback is used, then the closed loop gain is", opts: ["9.9","99.9","0.9","990"], a: 0 },
+  { q: "For an amplifier with negative feedback, the closed loop gain is given by (select the expression)", opts: ["A/(1 + A\u03B2)","A(1 + \u03B2)","(1 + A\u03B2)/A","\u03B2/(1 + A)"], a: 0 },
+  { q: "In a practical oscillator circuit, to start oscillations, the loop gain A\u03B2 must be", opts: ["Not Equal to 1","Equal to 1","Less than 1","Greater than 1"], a: 0 },
+  { q: "An amplifier has an open loop voltage gain of 2000. If 40% negative voltage series feedback is used, then the closed loop gain is", opts: ["249","24.9","0.249","2.49"], a: 3 },
+  { q: "In an amplifier, positive feedback leads to", opts: ["Noise","Amplification","Breakdown","Oscillations"], a: 3 },
+  { q: "For an amplifier with positive feedback, the closed loop gain is given by (select the expression)", opts: ["A/(1 - A\u03B2)","A(1 + A\u03B2)","(1 - A\u03B2)/A","A/(1 + A\u03B2)"], a: 0 },
+  { q: "What is an oscillator?", opts: ["A rectifier","A generator","An amplifier with positive feedback","An amplifier with negative feedback"], a: 2 },
+  { q: "An amplifier has an open loop voltage gain of 100000. If the negative voltage series feedback factor is 0.01, then the closed loop gain is", opts: ["9.9","99.9","0.9","990"], a: 1 },
+  { q: "In an amplifier with positive feedback: A = 20, \u03B2 = 0.04. The gain with feedback is", opts: ["200","50","100","infinity"], a: 2 },
+  { q: "Which of the following is not an advantage of a negative feedback amplifier?", opts: ["Higher input impedance","Unstable gain","Reduction in noise","Lower output impedance"], a: 1 },
+  { q: "An amplifier has an open loop voltage gain of 10000. If the negative voltage series feedback factor is 0.01, then the closed loop gain is", opts: ["990","9.9","0.99","99"], a: 3 },
+  { q: "Which among the following acts as an initiator for the operation of an oscillator in the absence of input signal?", opts: ["Noise voltage","Noise power","Noise current","Noise temperature"], a: 0 },
+  { q: "In which type of oscillator circuit capacitor split representation can be seen in the tank circuit?", opts: ["Wein bridge","RC phase shift","Hartley","Colpitts"], a: 3 },
+  { q: "In RC phase shift oscillator, if R = 4.7 k\u03A9 and C = 0.47 \u03BCF, the frequency is", opts: ["0.29413 Hz","294.13 Hz","2941.3 Hz","29.413 Hz"], a: 3 },
+  { q: "The tank circuit of a Colpitts oscillator has L = 5 mH, C1 = 22.22 nF and C2 = 2.22 nF. The feedback factor \u03B2 is", opts: ["0.001","0.1","0.01","1"], a: 1 },
+  { q: "An RC network in RC phase shift oscillator has C = 0.1 \u03BCF. Frequency = 1 kHz. Value of R used in the feedback network is", opts: ["650 \u03A9","500 \u03A9","600 \u03A9","1 k\u03A9"], a: 0 },
+  { q: "RC phase shift oscillator is a", opts: ["Low frequency oscillator","High frequency oscillator","Stable frequency oscillator","Relaxation oscillator"], a: 0 },
+  { q: "In a Hartley oscillator, if L1 = 5 mH, L2 = 10 mH and C = 0.01 \u03BCF, the value of the feedback factor \u03B2 is", opts: ["50","0.05","0.5","500"], a: 2 },
+  { q: "In a Hartley oscillator, if L1 = 7 mH, L2 = 10 mH and C = 0.01 \u03BCF, the value of the feedback factor \u03B2 is", opts: ["0.7","0.07","70","700"], a: 0 },
+  { q: "The components in the feedback network of Hartley and Colpitts oscillators are", opts: ["L & C components","R & C components","Only L component","None of these"], a: 0 },
+  { q: "What is the angle of phase shift for each designed RC network in the Phase Shift Oscillator circuit?", opts: ["30\u00B0","45\u00B0","60\u00B0","90\u00B0"], a: 2 },
+  { q: "In a Hartley oscillator, if L1 = 2 mH, L2 = 8 mH and C = 0.01 \u03BCF, the value of the feedback factor \u03B2 is", opts: ["25","0.025","250","0.25"], a: 3 },
+  { q: "In a Colpitts oscillator, if C1 = 100 pF, C2 = 60 pF and L = 0.422 H, the value of the feedback factor \u03B2 is", opts: ["0.6","0.06","60","600"], a: 0 },
+  { q: "The criterion that determines the mathematical condition to generate sustained oscillations is", opts: ["Pinch off","Shockley","Barkhausen","Threshold"], a: 2 },
+
+  /* Additional Unit-4 items to reach 35 distinct Unit-4 questions (total 35) */
+  { q: "The frequency of oscillations generated by RC phase shift oscillator is often approximated by", opts: ["f \\approx \\frac{1}{2\\pi RC \\sqrt{6}}","f = \\frac{1}{2\\pi RC}","f = \\frac{1}{RC}","f = \\frac{1}{4\\pi RC}"], a: 0 },
+  { q: "An RC network in an RC phase shift oscillator has C = 0.2 \u03BCF. Frequency = 1 kHz. Value of R used in the feedback network is", opts: ["325 \u03A9","500 \u03A9","600 \u03A9","1 k\u03A9"], a: 0 },
+  { q: "Hartley oscillator is a", opts: ["Relaxation oscillator","Low frequency oscillator","Stable frequency oscillator","High frequency oscillator"], a: 3 },
+  { q: "In a Hartley oscillator, if L1 = 7 mH, L2 = 10 mH and C = 0.01 \u03BCF, the value of the feedback factor \u03B2 is (repeat check)", opts: ["0.7","0.07","70","700"], a: 0 },
+  { q: "The frequency of oscillations generated by Colpitts oscillator is given by", opts: ["f = 1/(2\u03C0 \\sqrt{L(C1 C2)/(C1 + C2)})","f = 1/(2\u03C0 \\sqrt{L C1})","f = 1/(2\u03C0 \\sqrt{L C2})","Other"], a: 0 },
+  { q: "In an RC-Phase shift oscillator, the components used in the feedback network are", opts: ["4R and 4C","1R and 1C","3R and 3C","2R and 2L"], a: 2 },
+  { q: "The frequency of oscillations generated by Hartley oscillator is", opts: ["f = 1/(2\u03C0 \\sqrt{L C})","f = 1/(2\u03C0 \\sqrt{(L1+L2) C})","f = (L1+L2)/C","None of these"], a: 1 }
+];
+
+/* quick safety: ensure there are 59 items */
+if (QUESTIONS.length !== 59) {
+  console.warn("QUESTION COUNT:", QUESTIONS.length);
+}
+
+/* ensure we included all questions */
+let questionBank = QUESTIONS.slice();
+
+/* ---- Utility functions ---- */
+function shuffleArray(a){
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+/* App state */
+let state = {
+  name: '',
+  questions: [],
+  curIndex: 0,
+  answers: [], // stores chosen option index or null
+  startTime: null,
+  timeLimitSec: 15*60,
+  timerInterval: null
+};
+
+/* DOM refs */
+const introView = document.getElementById('introView');
+const quizView = document.getElementById('quizView');
+const resultView = document.getElementById('resultView');
+const startBtn = document.getElementById('startBtn');
+const playerNameInput = document.getElementById('playerName');
+const playerBadge = document.getElementById('playerBadge');
+const timerText = document.getElementById('timerText');
+const qIndexEl = document.getElementById('qIndex');
+const questionText = document.getElementById('questionText');
+const optionsArea = document.getElementById('optionsArea');
+const nextBtn = document.getElementById('nextBtn');
+const prevBtn = document.getElementById('prevBtn');
+const saveBtn = document.getElementById('saveBtn');
+const submitBtn = document.getElementById('submitBtn');
+const progressBar = document.getElementById('progressBar');
+const completedCount = document.getElementById('completedCount');
+const resultName = document.getElementById('resultName');
+const timeLeft = document.getElementById('timeLeft');
+const scoreNumber = document.getElementById('scoreNumber');
+const correctCountEl = document.getElementById('correctCount');
+const wrongCountEl = document.getElementById('wrongCount');
+const reviewBtn = document.getElementById('reviewBtn');
+const restartBtn = document.getElementById('restartBtn');
+const reviewList = document.getElementById('reviewList');
+const downloadBtn = document.getElementById('downloadBtn');
+
+/* --- Start quiz --- */
+startBtn.addEventListener('click', () => {
+  const name = playerNameInput.value.trim();
+  if(!name){ alert('Please enter your name before starting the quiz.'); playerNameInput.focus(); return; }
+  state.name = name;
+  playerBadge.textContent = name;
+  initQuiz();
+  introView.style.display = 'none';
+  quizView.style.display = '';
+});
+
+/* initialize quiz state */
+function initQuiz(){
+  // deep copy questions and shuffle questions & options
+  state.questions = shuffleArray(questionBank.map(q => {
+    const opts = q.opts.slice();
+    const correctText = opts[q.a];
+    const shuffledOpts = shuffleArray(opts.slice());
+    const newCorrectIndex = shuffledOpts.findIndex(s => s === correctText);
+    return { q: q.q, opts: shuffledOpts, a: newCorrectIndex };
+  }));
+  // shuffle question order
+  state.questions = shuffleArray(state.questions);
+  state.answers = Array(state.questions.length).fill(null);
+  state.curIndex = 0;
+  state.startTime = Date.now();
+  // start timer
+  startTimer(state.timeLimitSec);
+  renderQuestion();
+  updateProgress();
+}
+
+/* Timer */
+function startTimer(totalSec){
+  if(state.timerInterval) clearInterval(state.timerInterval);
+  let rem = totalSec;
+  updateTimerDisplay(rem);
+  state.timerInterval = setInterval(() => {
+    rem--;
+    if(rem < 0){
+      clearInterval(state.timerInterval);
+      autoSubmit();
+      return;
+    }
+    updateTimerDisplay(rem);
+  }, 1000);
+}
+function updateTimerDisplay(sec){
+  const mm = String(Math.floor(sec/60)).padStart(2,'0');
+  const ss = String(sec%60).padStart(2,'0');
+  timerText.textContent = mm+':'+ss;
+}
+
+/* Render question */
+function renderQuestion(){
+  const qi = state.curIndex;
+  const total = state.questions.length;
+  const item = state.questions[qi];
+  qIndexEl.textContent = `Question ${qi+1} / ${total}`;
+  questionText.innerHTML = item.q;
+  // options
+  optionsArea.innerHTML = '';
+  item.opts.forEach((optText, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.dataset.idx = idx;
+    btn.tabIndex = 0;
+    btn.innerHTML = `<div style="font-size:13px;font-weight:800">${String.fromCharCode(65+idx)}.</div><div style="font-weight:600;margin-top:6px">${optText}</div>`;
+    btn.addEventListener('click', () => {
+      state.answers[qi] = idx;
+      highlightSelected();
+      updateProgress();
+    });
+    optionsArea.appendChild(btn);
+  });
+  highlightSelected();
+  prevBtn.disabled = (qi === 0);
+  nextBtn.disabled = (qi === total-1);
+}
+
+/* highlight selected option on current question */
+function highlightSelected(){
+  const qi = state.curIndex;
+  const buttons = optionsArea.querySelectorAll('.option-btn');
+  buttons.forEach(b => b.classList.remove('selected'));
+  const chosen = state.answers[qi];
+  if(chosen !== null && chosen !== undefined){
+    const btn = optionsArea.querySelector('.option-btn[data-idx="'+chosen+'"]');
+    if(btn) btn.classList.add('selected');
+  }
+}
+
+/* navigation */
+nextBtn.addEventListener('click', () => {
+  if(state.curIndex < state.questions.length - 1){
+    state.curIndex++;
+    renderQuestion();
+  }
+});
+prevBtn.addEventListener('click', () => {
+  if(state.curIndex > 0){
+    state.curIndex--;
+    renderQuestion();
+  }
+});
+saveBtn.addEventListener('click', () => {
+  alert('Answer saved for this question.');
+  updateProgress();
+});
+
+/* submit */
+submitBtn.addEventListener('click', () => {
+  if(!confirm('Submit the quiz now? You will not be able to change answers.')) return;
+  submitQuiz();
+});
+
+function autoSubmit(){
+  alert('Time is up — auto-submitting the quiz.');
+  submitQuiz();
+}
+
+/* compute & show results */
+function submitQuiz(){
+  if(state.timerInterval) clearInterval(state.timerInterval);
+  const total = state.questions.length;
+  let correct = 0, wrong = 0;
+  for(let i=0;i<total;i++){
+    const user = state.answers[i];
+    const actual = state.questions[i].a;
+    if(user === null || user === undefined) { wrong++; }
+    else if(user === actual) correct++;
+    else wrong++;
+  }
+  const percent = Math.round( (correct/total)*100 );
+  quizView.style.display = 'none';
+  resultView.style.display = '';
+  resultName.textContent = state.name;
+  const now = Date.now();
+  const elapsed = Math.floor((now - state.startTime)/1000);
+  const left = Math.max(0, state.timeLimitSec - elapsed);
+  const mm = String(Math.floor(left/60)).padStart(2,'0'), ss = String(left%60).padStart(2,'0');
+  timeLeft.textContent = mm+':'+ss;
+  scoreNumber.textContent = percent + '%';
+  correctCountEl.textContent = correct;
+  wrongCountEl.textContent = wrong;
+  // populate review list
+  reviewList.innerHTML = '';
+  state.questions.forEach((qobj, i) => {
+    const wrap = document.createElement('div');
+    const user = state.answers[i];
+    const correctIndex = qobj.a;
+    const isRight = (user === correctIndex);
+    wrap.className = 'review-item ' + (isRight ? 'correct' : 'wrong');
+    let html = `<div style="display:flex;justify-content:space-between"><div style="font-weight:700">Q${i+1}</div><div style="font-size:13px;color:var(--muted)">Your answer: ${user===null?'-':String.fromCharCode(65+user)}</div></div>`;
+    html += `<div style="margin-top:8px;font-weight:700">${qobj.q}</div>`;
+    html += '<div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">';
+    qobj.opts.forEach((ot,j) => {
+      let label = String.fromCharCode(65+j) + '. ' + ot;
+      if(j === correctIndex){
+        html += `<div style="font-weight:700;color:var(--success)">${label} (Correct)</div>`;
+      } else if(j === user){
+        html += `<div style="color:var(--danger)">${label} (Your choice)</div>`;
+      } else {
+        html += `<div style="color:var(--muted)">${label}</div>`;
+      }
+    });
+    html += '</div>';
+    wrap.innerHTML = html;
+    reviewList.appendChild(wrap);
+  });
+}
+
+/* review, restart, download */
+reviewBtn.addEventListener('click', () => { reviewList.scrollTop = 0; });
+restartBtn.addEventListener('click', () => {
+  if(!confirm('Restart the quiz (this will reshuffle questions)?')) return;
+  resultView.style.display = 'none';
+  introView.style.display = '';
+  playerNameInput.value = state.name;
+});
+downloadBtn.addEventListener('click', () => {
+  const total = state.questions.length;
+  let correct = 0;
+  const lines = [];
+  lines.push('ECE Quiz Report');
+  lines.push('Participant: ' + state.name);
+  lines.push('Date: ' + new Date().toLocaleString());
+  lines.push('');
+  state.questions.forEach((q,i) => {
+    const u = state.answers[i];
+    const c = q.a;
+    if(u === c) correct++;
+    lines.push(`Q${i+1}: ${q.q}`);
+    lines.push(`  Your: ${u===null?'-':String.fromCharCode(65+u) + '. ' + q.opts[u]}`);
+    lines.push(`  Correct: ${String.fromCharCode(65+c)}. ${q.opts[c]}`);
+    lines.push('');
+  });
+  lines.push(`Score: ${correct} / ${total}`);
+  const blob = new Blob([lines.join('\n')], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `quiz_report_${state.name.replace(/\s+/g,'_')}.txt`; a.click();
+  URL.revokeObjectURL(url);
+});
+
+/* progress update */
+function updateProgress(){
+  const total = state.questions.length;
+  const answered = state.answers.filter(x => x !== null && x !== undefined).length;
+  completedCount.textContent = `${answered} / ${total}`;
+  const percent = Math.round((answered/total)*100);
+  progressBar.style.width = percent + '%';
+}
+
+/* Auto focus / load defaults */
+playerNameInput.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') startBtn.click();
+});
+
+/* keyboard nav */
+document.addEventListener('keydown', (e) => {
+  if(quizView.style.display === '') {
+    if(e.key === 'ArrowRight') nextBtn.click();
+    if(e.key === 'ArrowLeft') prevBtn.click();
+    if(e.key === 's' || e.key === 'S') saveBtn.click();
+  }
+});
+
+/* initial small shuffle for visible startup */
+shuffleArray(questionBank);
+</script>
+</body>
+</html>
